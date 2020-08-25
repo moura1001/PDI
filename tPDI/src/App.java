@@ -7,6 +7,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+import org.opencv.core.Core;
+
 public class App extends JFrame{
 
 	private JPanel contentPane;
@@ -15,6 +17,7 @@ public class App extends JFrame{
 	 * Launch the application.
 	 */
 	public static void main(String[] args){
+		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 		EventQueue.invokeLater(new Runnable(){
 			public void run(){
 				try{
@@ -34,7 +37,7 @@ public class App extends JFrame{
 		
 		Imagem imagem = new Imagem("Lenna.png");
 		ImageIcon _imagem = new ImageIcon(imagem.imagem);
-		ImageIcon _imagemModificada = new ImageIcon(imagem.converterRGBParaYIQParaRGB());
+		ImageIcon _imagemModificada = new ImageIcon(imagem.thresholding(0, 130));
 		
 		/*int color = -16755216;
 		
