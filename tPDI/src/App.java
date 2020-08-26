@@ -35,9 +35,9 @@ public class App extends JFrame{
 	 */
 	public App(){
 		
-		Imagem imagem = new Imagem("Lenna.png");
+		Imagem imagem = new Imagem("freckles.png");
 		ImageIcon _imagem = new ImageIcon(imagem.imagem);
-		ImageIcon _imagemModificada = new ImageIcon(imagem.thresholding(0, 130));
+		ImageIcon _imagemModificada = new ImageIcon(imagem.filtroMedia(0, "mask15x15.txt"));
 		
 		/*int color = -16755216;
 		
@@ -51,7 +51,7 @@ public class App extends JFrame{
 		//System.out.println("Finish!");
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 1076, 512);
+		setBounds(100, 100, 1300, 512);
 		setResizable(false);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));

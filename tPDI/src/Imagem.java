@@ -1,8 +1,8 @@
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 
@@ -13,9 +13,9 @@ import org.opencv.imgcodecs.Imgcodecs;
 
 public class Imagem{
 	
-	private static final String DIRETORIO = "recursos/";
+	private static final String DIRETORIO = "recursos/images/";
 	
-	class YIQ{
+	/*class YIQ{
 		public float y, i, q;
 		
 		public YIQ(float y, float i, float q){
@@ -23,7 +23,7 @@ public class Imagem{
 			this.i = i;
 			this.q = q;
 		}
-	}
+	}*/
 	
 	public BufferedImage imagem;
 	public int width, height;
@@ -63,20 +63,20 @@ public class Imagem{
 		return (imagem.getRGB(x, y) & 0xff000000) >>> 24;
 	}
 	
-	private int getB(BufferedImage imagem, int x, int y){
-		return imagem.getRGB(x, y) & 0xff;		
+	private int getB(int pixel){
+		return pixel & 0xff;		
 	}
 	
-	private int getG(BufferedImage imagem, int x, int y){
-		return (imagem.getRGB(x, y) & 0xff00) >> 8;		
+	private int getG(int pixel){
+		return (pixel & 0xff00) >> 8;		
 	}
 	
-	private int getR(BufferedImage imagem, int x, int y){
-		return (imagem.getRGB(x, y) & 0xff0000) >> 16;		
+	private int getR(int pixel){
+		return (pixel & 0xff0000) >> 16;		
 	}
 	
-	private int getA(BufferedImage imagem, int x, int y){
-		return (imagem.getRGB(x, y) & 0xff000000) >>> 24;
+	private int getA(int pixel){
+		return (pixel & 0xff000000) >>> 24;
 	}
 	
 	/*private int[] getRGB(int x, int y){
@@ -570,6 +570,83 @@ public class Imagem{
 		}
 		
 		return imagemModificada;
+	}
+	
+	public BufferedImage filtroMedia(int option, String mascara){
+		
+		//Mat imagemOpenCV = new Mat(width, height, CvType.CV_32FC3);
+		
+		BufferedImage imagemModificada = new BufferedImage(width, height, imagem.getType());
+		
+		float[][] mask = MaskReader.carregarArquivoParaMatriz(mascara);
+		//float[][] aux = MaskReader.carregarArquivoParaMatriz(mascara);
+		int tam = mask.length*mask.length;
+		int tam2 = mask.length/2;
+		//int start = tam - tam2;
+		float[] mediana = new float[tam];
+		
+		/*for(int x = start - 1; x < width - tam2; x++)
+			for(int y = start - 1; y < height - tam2; y++){
+				
+				int x1 = x - tam2;
+				int y1 = y - tam2;
+				int pos = 0;
+				
+				for(int xx = 0; xx < tam; xx++)
+					for(int yy = 0; yy < tam; yy++){
+						
+						int px = x1+xx-1;
+						int py = y1+yy-1;
+						
+						//aux[xx][yy] = imagem.getRGB(px, py);
+						
+						//mediana[pos] = 
+						pos++;
+					}
+			}*/
+		
+		for(int x = 0; x < width; x++)
+			for(int y = 0; y < height; y++){
+				//if(y == 511)
+				//	System.out.println("Here!");
+				int pos = 0;
+				
+				int px = 0;
+				int py;
+				for(int xx = x - tam2; px < mask.length; xx++, px++){					
+					py = 0;
+					for(int yy = y - tam2; py < mask.length; yy++, py++){
+						
+						if(xx>=0 && xx<width && yy>=0 && yy<height)
+							mediana[pos] = imagem.getRGB(xx, yy);
+							
+						else
+							mediana[pos] = mask[px][py];
+						pos++;	
+					}					
+				}
+				
+				Arrays.sort(mediana);
+				//int componenteR = getR((int) mediana[tam/2]);				
+				//int componenteG = getG((int) mediana[tam/2]);
+				//int componenteB = getB((int) mediana[tam/2]);
+				//imagemOpenCV.put(y, x, componenteB,componenteG,componenteR);
+				imagemModificada.setRGB(x, y, (int) mediana[tam/2]);
+			}
+		
+		
+		//imagemModificada = imagemOpenCVParaBufferedImage(imagemOpenCV);
+		
+		//if(option == 0)
+		//	try{
+		//		ImageIO.write(imagemModificada, "png", new File(DIRETORIO + "saved3.png"));
+		//	} catch (IOException e){
+		//		e.printStackTrace();
+		//		System.err.println("Erro! Não foi possível alterar a imagem.");
+		//	}
+		
+		return imagemModificada;
+		
 	}
 	
 	public void alterarImagem(){
