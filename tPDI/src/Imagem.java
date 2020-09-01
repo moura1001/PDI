@@ -132,6 +132,14 @@ public class Imagem{
 				
 		}
 		
+		
+		//try{
+		//	ImageIO.write(imagemModificada, "png", new File(DIRETORIO + "corean_grayscale.png"));
+		//} catch(IOException e){
+		//	e.printStackTrace();
+		//	System.err.println("Erro! Não foi possível alterar a imagem.");
+		//}
+		
 		return imagemModificada;
 		
 	}
@@ -161,7 +169,7 @@ public class Imagem{
 			imagemModificada = ImageIO.read(new ByteArrayInputStream(byteArray));
 		} catch (IOException e){
 			e.printStackTrace();
-			System.err.println("Erro! Não foi possível converter a imagem para o espaço YIQ.");
+			System.err.println("Erro! Não foi possível converter a imagem para BufferedImage.");
 		}
 		
 		return imagemModificada;		
@@ -170,7 +178,7 @@ public class Imagem{
 	public BufferedImage converterParaYIQ(){
 		//YIQ[][] imagemModificada = new YIQ[width][height];
 	    BufferedImage imagemModificada = null;
-		Mat imagemOpenCV = new Mat(width, height, CvType.CV_32FC3);
+		Mat imagemOpenCV = new Mat(height, width, CvType.CV_32FC3);
 		
 		for(int x = 0; x < width; x++)
 			for(int y = 0; y < height; y++){
@@ -229,7 +237,7 @@ public class Imagem{
 	private Mat YIQ(){
 		//YIQ[][] imagemModificada = new YIQ[width][height];
 	    //BufferedImage imagemModificada = null;
-		Mat imagemOpenCV = new Mat(width, height, CvType.CV_32FC3);
+		Mat imagemOpenCV = new Mat(height, width, CvType.CV_32FC3);
 		
 		for(int x = 0; x < width; x++)
 			for(int y = 0; y < height; y++){
@@ -481,6 +489,7 @@ public class Imagem{
 				//imagemModificada = bandasImagem(3);
 				for(int x = 0; x < width; x++)
 					for(int y = 0; y < height; y++){
+						//int[] p = imagem.getData().getPixel(x, y, p = null);
 						int pixelvalue = (getR(x,y) + getG(x,y) + getB(x,y))/3;
 						int componenteR = (pixelvalue < quantidade) ? 0 : 255;				
 						int componenteG = (pixelvalue < quantidade) ? 0 : 255;
@@ -718,6 +727,109 @@ public class Imagem{
 				//int componenteB = getB((int) mediana[tam/2]);
 				//imagemOpenCV.put(y, x, componenteB,componenteG,componenteR);
 				imagemModificada.setRGB(x, y, corRGB(mediaR/media.length,mediaG/media.length,mediaB/media.length,255));
+			}
+		
+		
+		//imagemModificada = imagemOpenCVParaBufferedImage(imagemOpenCV);
+		
+		//if(option == 0)
+		//	try{
+		//		ImageIO.write(imagemModificada, "png", new File(DIRETORIO + "saved3.png"));
+		//	} catch (IOException e){
+		//		e.printStackTrace();
+		//		System.err.println("Erro! Não foi possível alterar a imagem.");
+		//	}
+		
+		return imagemModificada;
+		
+	}
+	
+	public BufferedImage filtroSobel(){
+		
+		//Mat imagemOpenCV = new Mat(width, height, CvType.CV_32FC3);
+		
+		BufferedImage imagemModificada = new BufferedImage(width, height, imagem.getType());
+		
+		float[][] sobel = MaskReader.carregarArquivoParaMatriz("sobel-mask.txt");
+		int[][] sobelY = Ajudante.matrizFloatParaMatrizInt(sobel);
+		int[][] sobelX = Ajudante.rotate90Clockwise(sobelY);
+		//float[][] aux = MaskReader.carregarArquivoParaMatriz(mascara);
+		int tam = sobel.length;
+		int tam2 = sobel.length/2;
+		//int start = tam - tam2;
+		//float[] media = new float[tam];
+		
+		/*for(int x = start - 1; x < width - tam2; x++)
+			for(int y = start - 1; y < height - tam2; y++){
+				
+				int x1 = x - tam2;
+				int y1 = y - tam2;
+				int pos = 0;
+				
+				for(int xx = 0; xx < tam; xx++)
+					for(int yy = 0; yy < tam; yy++){
+						
+						int px = x1+xx-1;
+						int py = y1+yy-1;
+						
+						//aux[xx][yy] = imagem.getRGB(px, py);
+						
+						//mediana[pos] = 
+						pos++;
+					}
+			}*/
+		
+		
+		for(int x = 0; x < width; x++)
+			for(int y = 0; y < height; y++){
+				
+				int redY = 0;
+				int greenY = 0;
+				int blueY = 0;
+				int redX = 0;
+				int greenX= 0;
+				int blueX = 0;
+				//if(y == 7)
+				//	System.out.println("Here!");
+				//int pos = 0;
+				
+				int px = 0;
+				int py;
+				for(int xx = x - tam2; px < tam; xx++, px++){					
+					py = 0;
+					for(int yy = y - tam2; py < tam; yy++, py++){
+						
+						if(xx>=0 && xx<width && yy>=0 && yy<height){
+							
+							int pixel = imagem.getRGB(xx, yy);
+							
+							redY += getR(pixel) * sobelY[px][py];
+							greenY += getG(pixel) * sobelY[px][py];
+							blueY += getB(pixel) * sobelY[px][py];
+							
+							redX += getR(pixel) * sobelX[px][py];
+							greenX += getG(pixel) * sobelX[px][py];
+							blueX += getB(pixel) * sobelX[px][py];
+						
+						}	
+							
+						//else
+						// 	sobel[px][py] = sobel[px][py];
+						//pos++;	
+					}					
+				}
+				
+				int r = (int) Math.sqrt(redY*redY + redX*redX);
+				int g = (int) Math.sqrt(greenY*greenY + greenX*greenX);
+				int b = (int) Math.sqrt(blueY*blueY + blueX*blueX);
+				//int componenteR = (r < 64) ? 0: 128;				
+				//int componenteG = (g < 64) ? 0: 128;
+				//int componenteB = (b < 64) ? 0: 128;
+				int componenteR = Math.abs(redY) + Math.abs(redX);				
+				int componenteG = Math.abs(greenY) + Math.abs(greenX);
+				int componenteB = Math.abs(blueY) + Math.abs(blueX);
+
+				imagemModificada.setRGB(x, y, corRGB(componenteR,componenteG,componenteB,255));
 			}
 		
 		
